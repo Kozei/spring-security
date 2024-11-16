@@ -9,7 +9,7 @@ import com.demo.demo.domain.AppUser;
 @Service
 public interface UserService {
 
-    void saveUser(AppUser user);
+    AppUser saveUser(AppUser user);
     void deleteUser(String username);
 
     AppUser getUserByUsername(String username);
