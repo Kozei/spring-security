@@ -19,7 +19,6 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
-
 	@Bean
 	CommandLineRunner run(UserService userService, AuthorityService authorityService) {
 		return args -> {
@@ -28,9 +27,9 @@ public class DemoApplication {
 			AppUser appUser2 = userService.saveUser(new AppUser(null,"Nick","1234",new ArrayList<>()));
 			AppUser appUser3 = userService.saveUser(new AppUser(null,"Natalie","12345",new ArrayList<>()));
 
-			Authority authority1 = authorityService.saveAuthority(new Authority(null, "ROLE_USER",null));
-			Authority authority2 = authorityService.saveAuthority(new Authority(null, "ROLE_ADMIN",null));
-			Authority authority3 = authorityService.saveAuthority(new Authority(null, "ROLE_MANAGER",null));
+			Authority authority1 = authorityService.saveAuthority(new Authority(null, "ROLE_USER"));
+			Authority authority2 = authorityService.saveAuthority(new Authority(null, "ROLE_ADMIN"));
+			Authority authority3 = authorityService.saveAuthority(new Authority(null, "ROLE_MANAGER"));
 
 			userService.addUserAuthority(appUser1, authority1.getAuthorityName());
 			userService.addUserAuthority(appUser2, authority2.getAuthorityName());

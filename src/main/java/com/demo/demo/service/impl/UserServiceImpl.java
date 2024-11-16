@@ -48,10 +48,7 @@ public class UserServiceImpl implements UserService {
     public AppUser addUserAuthority(AppUser user, String authorityName) {
         AppUser appUser = userRepository.findByUsername(user.getUsername());
         Authority authority = authorityRepository.findByAuthorityName(authorityName);
-
-        authority.setAppUser(user);
         appUser.getAuthorities().add(authority);
-
         return appUser;
     }
 

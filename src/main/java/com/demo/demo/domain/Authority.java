@@ -22,8 +22,4 @@ public class Authority {
     private Long id;
     private String authorityName;
 
-    @ManyToOne
-    @JoinColumn(name = "app_user_id")
-    private AppUser appUser;
-
 }
