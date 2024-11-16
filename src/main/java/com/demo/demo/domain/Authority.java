@@ -20,7 +20,7 @@ public class Authority {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    private String name;
+    private String authorityName;
 
     @ManyToOne
     @JoinColumn(name = "app_user_id")
