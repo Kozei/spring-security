@@ -20,8 +20,8 @@ public class AuthorityServiceImpl implements AuthorityService {
     }
 
     @Override
-    public void saveAuthority(Authority authority) {
-        authorityRepository.save(authority);
+    public Authority saveAuthority(Authority authority) {
+        return authorityRepository.save(authority);
     }
 
     @Override
