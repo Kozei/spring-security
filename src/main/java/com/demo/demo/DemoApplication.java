@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.demo.demo.domain.AppUser;
 import com.demo.demo.domain.Authority;
@@ -15,7 +16,13 @@ import com.demo.demo.service.UserService;
 @SpringBootApplication
 public class DemoApplication {
 
-	public static void main(String[] args) {
+	private final PasswordEncoder passwordEncoder;
+
+    public DemoApplication(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
@@ -23,13 +30,46 @@ public class DemoApplication {
 	CommandLineRunner run(UserService userService, AuthorityService authorityService) {
 		return args -> {
 
-			AppUser appUser1 = userService.saveUser(new AppUser(null,"George","123",new ArrayList<>()));
-			AppUser appUser2 = userService.saveUser(new AppUser(null,"Nick","1234",new ArrayList<>()));
-			AppUser appUser3 = userService.saveUser(new AppUser(null,"Natalie","12345",new ArrayList<>()));
+			AppUser user1 = AppUser.builder()
+					.username("George")
+					.password(passwordEncoder.encode("1234567"))
+					.email("george@gmail.com")
+					.authorities(new ArrayList<>() {})
+					.build();
 
-			Authority authority1 = authorityService.saveAuthority(new Authority(null, "ROLE_USER"));
-			Authority authority2 = authorityService.saveAuthority(new Authority(null, "ROLE_ADMIN"));
-			Authority authority3 = authorityService.saveAuthority(new Authority(null, "ROLE_MANAGER"));
+			AppUser user2 = AppUser.builder()
+					.username("Nick")
+					.password(passwordEncoder.encode("12345678"))
+					.email("nick@gmail.com")
+					.authorities(new ArrayList<>() {})
+					.build();
+
+			AppUser user3 = AppUser.builder()
+					.username("Natalie")
+					.password(passwordEncoder.encode("123456789"))
+					.email("natalie@gmail.com")
+					.authorities(new ArrayList<>() {})
+					.build();
+
+			AppUser appUser1 = userService.saveUser(user1);
+			AppUser appUser2 = userService.saveUser(user2);
+			AppUser appUser3 = userService.saveUser(user3);
+
+			Authority auth1 = Authority.builder()
+					.authorityName("ROLE_USER")
+					.build();
+
+			Authority auth2 = Authority.builder()
+					.authorityName("ROLE_ADMIN")
+					.build();
+
+			Authority auth3 = Authority.builder()
+					.authorityName("ROLE_MANAGER")
+					.build();
+
+			Authority authority1 = authorityService.saveAuthority(auth1);
+			Authority authority2 = authorityService.saveAuthority(auth2);
+			Authority authority3 = authorityService.saveAuthority(auth3);
 
 			userService.addUserAuthority(appUser1, authority1.getAuthorityName());
 			userService.addUserAuthority(appUser2, authority2.getAuthorityName());

@@ -1,8 +1,11 @@
 package com.demo.demo.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import jakarta.persistence.CascadeType;
@@ -14,12 +17,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AppUser {
 
     @Id
@@ -27,9 +30,9 @@ public class AppUser {
     private Long id;
     private String username;
     private String password;
+    private String email;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "app_user_id")
     private List<Authority> authorities;
-
 }

@@ -2,6 +2,10 @@ package com.demo.demo.api;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,21 +16,32 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.demo.domain.AppUser;
 import com.demo.demo.domain.Authority;
+import com.demo.demo.dto.SignUpRequestDto;
+import com.demo.demo.mapper.Mapper;
 import com.demo.demo.service.AuthorityService;
 import com.demo.demo.service.UserService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @RestController
-@Slf4j
 public class UserResource {
+
+    private static final Logger log = LoggerFactory.getLogger(UserResource.class);
 
     private final UserService userService;
     private final AuthorityService authorityService;
+    private final Mapper<SignUpRequestDto, AppUser> signUpRequestMapper;
 
-    public UserResource(UserService userService, AuthorityService authorityService) {
+
+    public UserResource(UserService userService, AuthorityService authorityService, Mapper<SignUpRequestDto, AppUser> signUpRequestMapper) {
         this.userService = userService;
         this.authorityService = authorityService;
+        this.signUpRequestMapper = signUpRequestMapper;
+    }
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<Void> signUp(@RequestBody @Valid SignUpRequestDto signUpRequestDto) {
+        AppUser appUser = signUpRequestMapper.map(signUpRequestDto);
+        userService.saveUser(appUser);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/user")
