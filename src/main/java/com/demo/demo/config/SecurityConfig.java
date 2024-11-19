@@ -1,7 +1,10 @@
 package com.demo.demo.config;
 
+import static org.springframework.security.authorization.AuthenticatedAuthorizationManager.authenticated;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,9 +27,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .addFilterAt(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                .authorizeHttpRequests(auth -> auth
+                        //.requestMatchers(HttpMethod.POST,"/sign-up").permitAll()
+                        //.anyRequest()
+                        //.denyAll());
                         .anyRequest().permitAll());
-                        //.authenticated());
         return http.build();
     }
 
