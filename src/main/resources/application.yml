@@ -16,9 +16,10 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-
 logging:
    level:
      org:
        springframework:
          security: TRACE
+         web:
+           filter: TRACE

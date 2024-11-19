@@ -2,6 +2,7 @@ package com.demo.demo.config;
 
 import static org.springframework.security.authorization.AuthenticatedAuthorizationManager.authenticated;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,15 +25,26 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .addFilterAt(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        //.requestMatchers(HttpMethod.POST,"/sign-up").permitAll()
-                        //.anyRequest()
-                        //.denyAll());
-                        .anyRequest().permitAll());
+                        .requestMatchers(HttpMethod.POST,"/sign-up").permitAll()
+                        .anyRequest().authenticated());
         return http.build();
+    }
+
+    /**
+     * Prevent the CustomAuthenticationFilter to be registered with Servlet Container.
+     * The filter is already registered in Spring Security Chain.
+     * @param filter
+     * @return
+     */
+    @Bean
+    public FilterRegistrationBean<CustomAuthenticationFilter> customAuthenticationFilterRegistration(CustomAuthenticationFilter filter) {
+        FilterRegistrationBean<CustomAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean
