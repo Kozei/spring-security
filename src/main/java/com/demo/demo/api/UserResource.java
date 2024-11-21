@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,12 @@ public class UserResource {
     public ResponseEntity<Void> signUp(@RequestBody @Valid SignUpRequestDto signUpRequestDto) {
         AppUser appUser = signUpRequestMapper.map(signUpRequestDto);
         userService.saveUser(appUser);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<Void> login() {
+        System.out.println("logged in");
         return ResponseEntity.ok().build();
     }
 
