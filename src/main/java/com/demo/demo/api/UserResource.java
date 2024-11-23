@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.demo.domain.AppUser;
 import com.demo.demo.domain.Authority;
-import com.demo.demo.dto.SignUpRequestDto;
+import com.demo.demo.dto.RegisterDto;
 import com.demo.demo.mapper.Mapper;
 import com.demo.demo.service.AuthorityService;
 import com.demo.demo.service.UserService;
@@ -29,18 +29,18 @@ public class UserResource {
 
     private final UserService userService;
     private final AuthorityService authorityService;
-    private final Mapper<SignUpRequestDto, AppUser> signUpRequestMapper;
+    private final Mapper<RegisterDto, AppUser> signUpRequestMapper;
 
 
-    public UserResource(UserService userService, AuthorityService authorityService, Mapper<SignUpRequestDto, AppUser> signUpRequestMapper) {
+    public UserResource(UserService userService, AuthorityService authorityService, Mapper<RegisterDto, AppUser> signUpRequestMapper) {
         this.userService = userService;
         this.authorityService = authorityService;
         this.signUpRequestMapper = signUpRequestMapper;
     }
 
-    @PostMapping("/sign-up")
-    public ResponseEntity<Void> signUp(@RequestBody @Valid SignUpRequestDto signUpRequestDto) {
-        AppUser appUser = signUpRequestMapper.map(signUpRequestDto);
+    @PostMapping("/register")
+    public ResponseEntity<Void> signUp(@RequestBody @Valid RegisterDto registerDto) {
+        AppUser appUser = signUpRequestMapper.map(registerDto);
         userService.saveUser(appUser);
         return ResponseEntity.ok().build();
     }

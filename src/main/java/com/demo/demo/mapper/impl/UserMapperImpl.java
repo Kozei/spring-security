@@ -4,11 +4,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import com.demo.demo.domain.AppUser;
-import com.demo.demo.dto.SignUpRequestDto;
+import com.demo.demo.dto.RegisterDto;
 import com.demo.demo.mapper.Mapper;
 
 @Component
-public class UserMapperImpl implements Mapper<SignUpRequestDto, AppUser> {
+public class UserMapperImpl implements Mapper<RegisterDto, AppUser> {
 
     private final ModelMapper modelMapper;
 
@@ -17,12 +17,12 @@ public class UserMapperImpl implements Mapper<SignUpRequestDto, AppUser> {
     }
 
     @Override
-    public AppUser map(SignUpRequestDto signUpRequestDto) {
-        return modelMapper.map(signUpRequestDto, AppUser.class);
+    public AppUser map(RegisterDto registerDto) {
+        return modelMapper.map(registerDto, AppUser.class);
     }
 
     @Override
-    public SignUpRequestDto mapReverse(AppUser appUser) {
-        return modelMapper.map(appUser, SignUpRequestDto.class);
+    public RegisterDto mapReverse(AppUser appUser) {
+        return modelMapper.map(appUser, RegisterDto.class);
     }
 }

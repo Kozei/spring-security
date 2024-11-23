@@ -1,13 +1,10 @@
 package com.demo.demo.security.authentication;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
 
-@Component
 public class CustomAuthentication implements Authentication {
 
     private Object principal;
@@ -60,5 +57,9 @@ public class CustomAuthentication implements Authentication {
     @Override
     public String getName() {
         return this.principal.toString();
+    }
+
+    public void eraseCredentials() {
+        this.password = null;
     }
 }

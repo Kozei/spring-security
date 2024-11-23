@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class SignUpRequestDto {
+public class RegisterDto {
 
     @NotBlank(message = "Username field should not be empty")
     String username;
@@ -47,7 +47,7 @@ public class SignUpRequestDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SignUpRequestDto that = (SignUpRequestDto) o;
+        RegisterDto that = (RegisterDto) o;
         return Objects.equals(username, that.username) && Objects.equals(password, that.password) && Objects.equals(email, that.email);
     }
 

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.demo.demo.domain.AppUser;
 import com.demo.demo.repository.UserRepository;
 
-@Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
