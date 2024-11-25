@@ -2,11 +2,8 @@ package com.demo.demo.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import com.demo.demo.domain.AppUser;
 
-@Service
 public interface UserService {
 
     AppUser saveUser(AppUser user);

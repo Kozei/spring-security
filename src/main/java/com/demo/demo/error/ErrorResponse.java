@@ -8,16 +8,15 @@ public class ErrorResponse implements Serializable {
 
     private final Instant timestamp;
     private final int status;
-    private final String error;
-    private final String message;
+    private final String statusMessage;
+
     private final String userMessage;
     private final String path;
 
     private ErrorResponse(Builder builder) {
         this.timestamp = builder.timestamp;
         this.status = builder.status;
-        this.error = builder.error;
-        this.message = builder.message;
+        this.statusMessage = builder.statusMessage;
         this.userMessage = builder.userMessage;
         this.path = builder.path;
     }
@@ -30,12 +29,8 @@ public class ErrorResponse implements Serializable {
         return status;
     }
 
-    public String getError() {
-        return error;
-    }
-
-    public String getMessage() {
-        return message;
+    public String getStatusMessage() {
+        return statusMessage;
     }
 
     public String getUserMessage() {
@@ -47,18 +42,18 @@ public class ErrorResponse implements Serializable {
     }
 
     public static class Builder {
-        private Instant timestamp;
-        private String message;
+        private final Instant timestamp;
+        private final int status;
+        private final String statusMessage;
 
         //optional
-        private int status;
-        private String error;
         private String userMessage;
         private String path;
 
-        public Builder(Instant timestamp, String message) {
+        public Builder(Instant timestamp, int status, String statusMessage) {
             this.timestamp = timestamp;
-            this.message = message;
+            this.status = status;
+            this.statusMessage = statusMessage;
         }
 
         public Builder userMessage(String userMessage) {
@@ -68,16 +63,6 @@ public class ErrorResponse implements Serializable {
 
         public Builder path(String path) {
             this.path = path;
-            return this;
-        }
-
-        public Builder error(String error) {
-            this.error = error;
-            return this;
-        }
-
-        public Builder status(int status) {
-            this.status = status;
             return this;
         }
 
@@ -91,15 +76,14 @@ public class ErrorResponse implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         ErrorResponse that = (ErrorResponse) o;
-        return status == that.status && Objects.equals(timestamp, that.timestamp) && Objects.equals(error, that.error) && Objects.equals(message, that.message) && Objects.equals(userMessage, that.userMessage) && Objects.equals(path, that.path);
+        return status == that.status && Objects.equals(timestamp, that.timestamp) && Objects.equals(statusMessage, that.statusMessage) && Objects.equals(userMessage, that.userMessage) && Objects.equals(path, that.path);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hashCode(timestamp);
         result = 31 * result + status;
-        result = 31 * result + Objects.hashCode(error);
-        result = 31 * result + Objects.hashCode(message);
+        result = 31 * result + Objects.hashCode(statusMessage);
         result = 31 * result + Objects.hashCode(userMessage);
         result = 31 * result + Objects.hashCode(path);
         return result;
@@ -110,8 +94,7 @@ public class ErrorResponse implements Serializable {
         return "ErrorResponse{" +
                 "timestamp=" + timestamp +
                 ", status=" + status +
-                ", error='" + error + '\'' +
-                ", message='" + message + '\'' +
+                ", statusMessage='" + statusMessage + '\'' +
                 ", userMessage='" + userMessage + '\'' +
                 ", path='" + path + '\'' +
                 '}';

@@ -1,6 +1,7 @@
 package com.demo.demo.security.filter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,13 +9,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.demo.demo.error.ErrorResponse;
 import com.demo.demo.security.authentication.CustomAuthentication;
 import com.demo.demo.security.manager.CustomAuthenticationManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Centralized security logic. Rejects invalid or unauthenticated
@@ -22,10 +30,14 @@ import com.demo.demo.security.manager.CustomAuthenticationManager;
  */
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
-    private final CustomAuthenticationManager customAuthenticationManager;
+    private static final String LOGIN_FAILED = "login failed. Please try again with valid credentials";
 
-    public CustomAuthenticationFilter(CustomAuthenticationManager customAuthenticationManager) {
+    private final CustomAuthenticationManager customAuthenticationManager;
+    private final ObjectMapper objectMapper;
+
+    public CustomAuthenticationFilter(CustomAuthenticationManager customAuthenticationManager, ObjectMapper objectMapper) {
         this.customAuthenticationManager = customAuthenticationManager;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -47,7 +59,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
      * @return
      */
     private boolean isLoginRequest(HttpServletRequest request) {
-        return request.getRequestURI().equals("/login") && request.getMethod().equals("POST");
+        return request.getRequestURI().equals("/public/login") && request.getMethod().equals("POST");
     }
 
     /**
@@ -57,11 +69,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     private Authentication attemptAuthentication(HttpServletRequest request) {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        Authentication authentication;
 
-        //TODO: next iteration extract username and password from json payload. Implement builder design.
         var customAuthentication = new CustomAuthentication(username, password, false, Collections.emptyList());
 
-        Authentication authentication = customAuthenticationManager.authenticate(customAuthentication);
+        authentication = customAuthenticationManager.authenticate(customAuthentication);
 
         if (authentication instanceof CustomAuthentication) {
             customAuthentication.eraseCredentials();

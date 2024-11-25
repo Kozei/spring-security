@@ -1,5 +1,5 @@
 #Sign up
-POST http://localhost:8080/register
+POST http://localhost:8080/public/register
 Content-Type: application/json
 
 {
@@ -11,7 +11,14 @@ Content-Type: application/json
 ###
 
 #Login
-POST http://localhost:8080/login
+POST http://localhost:8080/public/login
 Content-Type: application/x-www-form-urlencoded
 
 username=elon&password=1234567
+
+
+###
+
+#Protected Resource
+GET http://localhost:8080/private/user
+Content-Type: application/json
