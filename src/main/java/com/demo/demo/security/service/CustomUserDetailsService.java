@@ -3,7 +3,6 @@ package com.demo.demo.security.service;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
 import com.demo.demo.domain.AppUser;
 import com.demo.demo.repository.UserRepository;

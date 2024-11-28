@@ -1,11 +1,23 @@
-#Sign up
+#When you register with "user" as username then the system gives you USER permissions
 POST http://localhost:8080/public/register
 Content-Type: application/json
 
 {
-    "username": "elon",
+    "username": "user",
     "password": "1234567",
     "email": "elon@hotmail.com"
+}
+
+###
+
+#When you register with "admin" as username then the system gives you ADMIN permissions
+POST http://localhost:8080/public/register
+Content-Type: application/json
+
+{
+"username": "admin",
+"password": "1234567",
+"email": "elon@hotmail.com"
 }
 
 ###

@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.demo.domain.AppUser;
 import com.demo.demo.domain.Authority;
+import com.demo.demo.dto.AuthResponseDto;
 import com.demo.demo.dto.RegisterDto;
 import com.demo.demo.mapper.Mapper;
 import com.demo.demo.security.service.JwtService;
+import com.demo.demo.security.service.UserPrincipal;
 import com.demo.demo.service.AuthorityService;
 import com.demo.demo.service.UserService;
 
@@ -42,12 +44,15 @@ public class UserResource {
     }
 
     @PostMapping("/public/register")
-    public ResponseEntity<Void> signUp(@RequestBody @Valid RegisterDto registerDto) {
-        AppUser appUser = signUpRequestMapper.map(registerDto);
+    public ResponseEntity<AuthResponseDto> signUp(@RequestBody @Valid RegisterDto registerDto) {
+        var appUser = signUpRequestMapper.map(registerDto);
         userService.saveUser(appUser);
 
-        String token = jwtService.generateToken(appUser);
-        return ResponseEntity.ok().build();
+        var userPrincipal = new UserPrincipal(appUser);
+        var token = jwtService.generateToken(userPrincipal);
+        var authResponseDto = new AuthResponseDto(token);
+
+        return ResponseEntity.ok(authResponseDto);
     }
 
     @PostMapping(value = "/public/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)

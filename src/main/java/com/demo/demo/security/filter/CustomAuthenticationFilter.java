@@ -75,7 +75,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
         authentication = customAuthenticationManager.authenticate(customAuthentication);
 
-        if (authentication instanceof CustomAuthentication) {
+        if (isAuthenticated(authentication) && authentication instanceof CustomAuthentication) {
             customAuthentication.eraseCredentials();
         }
 

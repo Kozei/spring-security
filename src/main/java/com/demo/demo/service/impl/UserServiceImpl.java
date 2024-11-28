@@ -1,5 +1,10 @@
 package com.demo.demo.service.impl;
 
+import static com.demo.demo.util.MessageConstants.ADMIN;
+import static com.demo.demo.util.MessageConstants.ROLE_ADMIN;
+import static com.demo.demo.util.MessageConstants.ROLE_USER;
+import static com.demo.demo.util.MessageConstants.USER;
+
 import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +35,18 @@ public class UserServiceImpl implements UserService {
     public AppUser saveUser(AppUser user) {
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
+
+        if (user.getUsername().equals(USER)) {
+            var authorityUser = new Authority();
+            authorityUser.setAuthorityName(ROLE_USER);
+            user.setAuthorities(List.of(authorityUser));
+        }
+
+        if (user.getUsername().equals(ADMIN)) {
+            var authorityAdmin = new Authority();
+            authorityAdmin.setAuthorityName(ROLE_ADMIN);
+            user.setAuthorities(List.of(authorityAdmin));
+        }
         return userRepository.save(user);
     }
 
