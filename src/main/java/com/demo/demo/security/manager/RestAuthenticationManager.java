@@ -5,13 +5,13 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-import com.demo.demo.security.provider.CustomAuthenticationProvider;
+import com.demo.demo.security.provider.RestAuthenticationProvider;
 
-public class CustomAuthenticationManager implements AuthenticationManager {
+public class RestAuthenticationManager implements AuthenticationManager {
 
-    private final CustomAuthenticationProvider provider;
+    private final RestAuthenticationProvider provider;
 
-    public CustomAuthenticationManager(CustomAuthenticationProvider provider) {
+    public RestAuthenticationManager(RestAuthenticationProvider provider) {
         this.provider = provider;
     }
 

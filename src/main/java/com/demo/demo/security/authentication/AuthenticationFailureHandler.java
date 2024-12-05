@@ -25,9 +25,9 @@ import com.demo.demo.error.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Centralized exception handling at the security chain level decoupled from business logic.
- * This entry point is designed to handle authentication errors. Every authentication failure
- * will be rejected early before hitting the API layer.
+ * Centralized exception handling within the security chain decoupled from the business layer.
+ * This entry point is designed to handle authentication errors. Every call that fails to authenticate
+ * will be rejected here early, before reaching the API layer.
  */
 public class AuthenticationFailureHandler implements AuthenticationEntryPoint {
 
@@ -93,11 +93,9 @@ public class AuthenticationFailureHandler implements AuthenticationEntryPoint {
                                    String userMessage,
                                    HttpStatus status) throws IOException {
 
-        String path = (String) request.getAttribute("originalRequestUri");
-
          var errorResponse = new ErrorResponse.Builder(Instant.now(), status.value(), authException.getMessage())
                 .userMessage(userMessage)
-                .path(path)
+                .path(getPath(request))
                 .build();
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

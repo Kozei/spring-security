@@ -6,6 +6,8 @@ import java.security.Key;
 import java.util.Date;
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,14 @@ public class JwtServiceImpl implements JwtService {
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60)) //1 minute
                 .signWith(getSignInKey())
                 .compact();
+    }
+
+    @Override
+    public String extractToken(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            return token.substring(7);
+        } else throw new RuntimeException();
     }
 
     private Key getSignInKey() {

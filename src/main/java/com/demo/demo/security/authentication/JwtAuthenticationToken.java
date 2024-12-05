@@ -10,9 +10,9 @@ import org.springframework.security.core.GrantedAuthority;
  */
 public class JwtAuthenticationToken implements Authentication {
 
-    private Object principal;
+    private final Object principal;
     private Object password;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final Collection<? extends GrantedAuthority> authorities;
     private Boolean isAuthenticated;
 
     public JwtAuthenticationToken(Object principal, Object password, Boolean isAuthenticated, Collection<? extends GrantedAuthority> authorities) {
@@ -20,10 +20,6 @@ public class JwtAuthenticationToken implements Authentication {
         this.password = password;
         this.isAuthenticated = isAuthenticated;
         this.authorities = authorities;
-    }
-
-    public JwtAuthenticationToken(){
-
     }
 
     @Override

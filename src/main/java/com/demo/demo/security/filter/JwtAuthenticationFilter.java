@@ -14,7 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.demo.demo.security.authentication.JwtAuthenticationToken;
-import com.demo.demo.security.manager.CustomAuthenticationManager;
+import com.demo.demo.security.manager.RestAuthenticationManager;
+import com.demo.demo.security.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -23,14 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String LOGIN_FAILED = "login failed. Please try again with valid credentials";
+    private final RestAuthenticationManager restAuthenticationManager;
+    private final JwtService jwtService;
 
-    private final CustomAuthenticationManager customAuthenticationManager;
-    private final ObjectMapper objectMapper;
-
-    public JwtAuthenticationFilter(CustomAuthenticationManager customAuthenticationManager, ObjectMapper objectMapper) {
-        this.customAuthenticationManager = customAuthenticationManager;
-        this.objectMapper = objectMapper;
+    public JwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager, JwtService jwtService) {
+        this.restAuthenticationManager = restAuthenticationManager;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -43,6 +42,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 setAuthenticationToContext(authentication);
             }
         }
+//
+//        if (!isLoginRequest(request)) {
+//            String token = jwtService.extractToken(request);
+//        }
+
         filterChain.doFilter(request, response);
     }
 
@@ -66,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         var customAuthentication = new JwtAuthenticationToken(username, password, false, Collections.emptyList());
 
-        authentication = customAuthenticationManager.authenticate(customAuthentication);
+        authentication = restAuthenticationManager.authenticate(customAuthentication);
 
         if (isAuthenticated(authentication) && authentication instanceof JwtAuthenticationToken) {
             customAuthentication.eraseCredentials();

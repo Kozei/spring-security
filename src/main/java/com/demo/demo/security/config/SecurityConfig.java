@@ -21,9 +21,10 @@ import com.demo.demo.repository.UserRepository;
 import com.demo.demo.security.filter.CapturePathFilter;
 import com.demo.demo.security.authentication.AuthenticationFailureHandler;
 import com.demo.demo.security.filter.JwtAuthenticationFilter;
-import com.demo.demo.security.manager.CustomAuthenticationManager;
-import com.demo.demo.security.provider.CustomAuthenticationProvider;
-import com.demo.demo.security.service.CustomUserDetailsService;
+import com.demo.demo.security.manager.RestAuthenticationManager;
+import com.demo.demo.security.provider.RestAuthenticationProvider;
+import com.demo.demo.security.service.JwtService;
+import com.demo.demo.security.service.RestUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
@@ -31,18 +32,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain customSecurityFilterChain(HttpSecurity http,
-                                                         CustomAuthenticationManager customAuthenticationManager,
-                                                         ObjectMapper objectMapper,
-                                                         @Qualifier("pathPatternParser") PathPatternParser parser) throws Exception {
+    public SecurityFilterChain restSecurityFilterChain(HttpSecurity http,
+                                                       RestAuthenticationManager restAuthenticationManager,
+                                                       ObjectMapper objectMapper,
+                                                       @Qualifier("pathPatternParser") PathPatternParser parser,
+                                                       JwtService jwtService) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .rememberMe(AbstractHttpConfigurer::disable)
-                .exceptionHandling((exception) -> exception.authenticationEntryPoint(customAuthenticationEntryPoint(objectMapper, parser)))
+                .exceptionHandling((exception) -> exception.authenticationEntryPoint(authenticationFailureHandler(objectMapper, parser)))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterAt(customAuthenticationFilter(customAuthenticationManager, objectMapper), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(jwtAuthenticationFilter(restAuthenticationManager, jwtService), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(capturePathFilter(), JwtAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_API).permitAll()
@@ -52,8 +54,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CustomUserDetailsService customUserDetailsService(UserRepository userRepository) {
-        return new CustomUserDetailsService(userRepository);
+    public RestUserDetailsService restUserDetailsService(UserRepository userRepository) {
+        return new RestUserDetailsService(userRepository);
     }
 
     @Bean
@@ -62,19 +64,19 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CustomAuthenticationProvider customAuthenticationProvider(CustomUserDetailsService customUserDetailsService,
-                                                                     PasswordEncoder passwordEncoder) {
-        return new CustomAuthenticationProvider(customUserDetailsService, passwordEncoder);
+    public RestAuthenticationProvider restAuthenticationProvider(RestUserDetailsService restUserDetailsService,
+                                                                 PasswordEncoder passwordEncoder) {
+        return new RestAuthenticationProvider(restUserDetailsService, passwordEncoder);
     }
 
     @Bean
-    public CustomAuthenticationManager customAuthenticationManager(CustomAuthenticationProvider customAuthenticationProvider) {
-        return new CustomAuthenticationManager(customAuthenticationProvider);
+    public RestAuthenticationManager restAuthenticationManager(RestAuthenticationProvider restAuthenticationProvider) {
+        return new RestAuthenticationManager(restAuthenticationProvider);
     }
 
     @Bean
-    public JwtAuthenticationFilter customAuthenticationFilter(CustomAuthenticationManager customAuthenticationManager, ObjectMapper objectMapper) {
-        return new JwtAuthenticationFilter(customAuthenticationManager, objectMapper);
+    public JwtAuthenticationFilter jwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager, JwtService jwtService) {
+        return new JwtAuthenticationFilter(restAuthenticationManager, jwtService);
     }
 
     @Bean
@@ -96,7 +98,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationEntryPoint customAuthenticationEntryPoint(ObjectMapper objectMapper, @Qualifier("pathPatternParser") PathPatternParser parser) {
+    public AuthenticationEntryPoint authenticationFailureHandler(ObjectMapper objectMapper, @Qualifier("pathPatternParser") PathPatternParser parser) {
         return new AuthenticationFailureHandler(objectMapper, parser);
     }
 

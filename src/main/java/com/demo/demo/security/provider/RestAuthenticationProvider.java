@@ -8,15 +8,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.demo.demo.security.authentication.JwtAuthenticationToken;
-import com.demo.demo.security.service.CustomUserDetailsService;
+import com.demo.demo.security.service.RestUserDetailsService;
 
-public class CustomAuthenticationProvider implements AuthenticationProvider {
+public class RestAuthenticationProvider implements AuthenticationProvider {
 
-    private final CustomUserDetailsService customUserDetailsService;
+    private final RestUserDetailsService restUserDetailsService;
     private final PasswordEncoder passwordEncoder;
 
-    public CustomAuthenticationProvider(CustomUserDetailsService customUserDetailsService, PasswordEncoder passwordEncoder) {
-        this.customUserDetailsService = customUserDetailsService;
+    public RestAuthenticationProvider(RestUserDetailsService restUserDetailsService, PasswordEncoder passwordEncoder) {
+        this.restUserDetailsService = restUserDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -26,7 +26,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String username = authentication.getName();
         String password = authentication.getCredentials().toString();
 
-        UserDetails userPrincipal = customUserDetailsService.loadUserByUsername(username);
+        UserDetails userPrincipal = restUserDetailsService.loadUserByUsername(username);
 
         if (passwordEncoder.matches(password, userPrincipal.getPassword())) {
             return new JwtAuthenticationToken(userPrincipal, password, true, userPrincipal.getAuthorities());

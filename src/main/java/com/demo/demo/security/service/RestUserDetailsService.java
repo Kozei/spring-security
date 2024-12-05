@@ -7,11 +7,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.demo.demo.domain.AppUser;
 import com.demo.demo.repository.UserRepository;
 
-public class CustomUserDetailsService implements UserDetailsService {
+public class RestUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public RestUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
