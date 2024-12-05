@@ -5,21 +5,24 @@ import java.util.Collection;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-public class CustomAuthentication implements Authentication {
+/**
+ * Represents the authenticated user.
+ */
+public class JwtAuthenticationToken implements Authentication {
 
     private Object principal;
     private Object password;
     private Collection<? extends GrantedAuthority> authorities;
     private Boolean isAuthenticated;
 
-    public CustomAuthentication(Object principal, Object password, Boolean isAuthenticated, Collection<? extends GrantedAuthority> authorities) {
+    public JwtAuthenticationToken(Object principal, Object password, Boolean isAuthenticated, Collection<? extends GrantedAuthority> authorities) {
         this.principal = principal;
         this.password = password;
         this.isAuthenticated = isAuthenticated;
         this.authorities = authorities;
     }
 
-    public CustomAuthentication(){
+    public JwtAuthenticationToken(){
 
     }
 

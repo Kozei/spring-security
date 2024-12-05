@@ -1,7 +1,6 @@
 package com.demo.demo.security.filter;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Collections;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,33 +8,27 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.demo.demo.error.ErrorResponse;
-import com.demo.demo.security.authentication.CustomAuthentication;
+import com.demo.demo.security.authentication.JwtAuthenticationToken;
 import com.demo.demo.security.manager.CustomAuthenticationManager;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Centralized security logic. Rejects invalid or unauthenticated
  * calls early before current request reaches the controller layer.
  */
-public class CustomAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String LOGIN_FAILED = "login failed. Please try again with valid credentials";
 
     private final CustomAuthenticationManager customAuthenticationManager;
     private final ObjectMapper objectMapper;
 
-    public CustomAuthenticationFilter(CustomAuthenticationManager customAuthenticationManager, ObjectMapper objectMapper) {
+    public JwtAuthenticationFilter(CustomAuthenticationManager customAuthenticationManager, ObjectMapper objectMapper) {
         this.customAuthenticationManager = customAuthenticationManager;
         this.objectMapper = objectMapper;
     }
@@ -71,11 +64,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         String password = request.getParameter("password");
         Authentication authentication;
 
-        var customAuthentication = new CustomAuthentication(username, password, false, Collections.emptyList());
+        var customAuthentication = new JwtAuthenticationToken(username, password, false, Collections.emptyList());
 
         authentication = customAuthenticationManager.authenticate(customAuthentication);
 
-        if (isAuthenticated(authentication) && authentication instanceof CustomAuthentication) {
+        if (isAuthenticated(authentication) && authentication instanceof JwtAuthenticationToken) {
             customAuthentication.eraseCredentials();
         }
 

@@ -7,7 +7,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.demo.demo.security.authentication.CustomAuthentication;
+import com.demo.demo.security.authentication.JwtAuthenticationToken;
 import com.demo.demo.security.service.CustomUserDetailsService;
 
 public class CustomAuthenticationProvider implements AuthenticationProvider {
@@ -29,7 +29,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         UserDetails userPrincipal = customUserDetailsService.loadUserByUsername(username);
 
         if (passwordEncoder.matches(password, userPrincipal.getPassword())) {
-            return new CustomAuthentication(userPrincipal, password, true, userPrincipal.getAuthorities());
+            return new JwtAuthenticationToken(userPrincipal, password, true, userPrincipal.getAuthorities());
         }
 
         throw new BadCredentialsException("Bad credentials");
@@ -37,7 +37,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication.equals(CustomAuthentication.class);
+        return authentication.equals(JwtAuthenticationToken.class);
     }
 
 }
