@@ -10,19 +10,28 @@ import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.demo.demo.exception.MalformedJwtAuthenticationException;
 import com.demo.demo.security.service.JwtService;
+import com.demo.demo.util.ResourceUtil;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtServiceImpl implements JwtService {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtServiceImpl.class);
 
     @Override
     public String generateToken(UserDetails userDetails) {
@@ -59,6 +68,15 @@ public class JwtServiceImpl implements JwtService {
             claims = null;
         }
         return claims;
+    }
+
+    @Override
+    public void checkTokenSemantics(String token) {
+        //TODO: Any exception thrown here (when token semantics are altered) like Signature or Malformed Exception is treated as CredentialsNotFoundException. Fix it.
+        Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token);
     }
 
     private Key getSignInKey() {

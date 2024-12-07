@@ -25,7 +25,7 @@ import com.demo.demo.security.manager.RestAuthenticationManager;
 import com.demo.demo.security.provider.RestAuthenticationProvider;
 import com.demo.demo.security.service.JwtService;
 import com.demo.demo.security.service.RestUserDetailsService;
-import com.demo.demo.util.Resource;
+import com.demo.demo.util.ResourceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
@@ -37,18 +37,17 @@ public class SecurityConfig {
                                                        RestAuthenticationManager restAuthenticationManager,
                                                        ObjectMapper objectMapper,
                                                        @Qualifier("pathPatternParser") PathPatternParser parser,
-                                                       JwtService jwtService, RestUserDetailsService restUserDetailsService, RestAuthenticationProvider restAuthenticationProvider, Resource resource) throws Exception {
+                                                       JwtService jwtService, RestUserDetailsService restUserDetailsService, RestAuthenticationProvider restAuthenticationProvider, ResourceUtil resourceUtil) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .rememberMe(AbstractHttpConfigurer::disable)
                 .anonymous(AbstractHttpConfigurer::disable)
-                .anonymous(AbstractHttpConfigurer::disable)
-                .exceptionHandling((exception) -> exception.authenticationEntryPoint(authenticationFailureHandler(objectMapper, parser)))
+                .exceptionHandling((exception) -> exception.authenticationEntryPoint(authenticationFailureHandler(resourceUtil)))
                 .securityContext((securityContext) -> securityContext.requireExplicitSave(false))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterAt(jwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService,resource), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(jwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService, resourceUtil), UsernamePasswordAuthenticationFilter.class)
                 .authenticationManager(restAuthenticationManager)
                 .authenticationProvider(restAuthenticationProvider)
                 .addFilterBefore(capturePathFilter(), JwtAuthenticationFilter.class)
@@ -81,16 +80,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public Resource resource(@Qualifier("pathPatternParser")PathPatternParser parser) {
-        return new Resource(parser);
+    public ResourceUtil resource(@Qualifier("pathPatternParser")PathPatternParser parser, ObjectMapper objectMapper) {
+        return new ResourceUtil(parser, objectMapper);
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager,
                                                            JwtService jwtService,
                                                            RestUserDetailsService restUserDetailsService,
-                                                           Resource resource) {
-        return new JwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService, resource);
+                                                           ResourceUtil resourceUtil) {
+        return new JwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService, resourceUtil);
     }
 
     @Bean
@@ -112,8 +111,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationEntryPoint authenticationFailureHandler(ObjectMapper objectMapper, @Qualifier("pathPatternParser") PathPatternParser parser) {
-        return new AuthenticationFailureHandler(objectMapper, parser);
+    public AuthenticationEntryPoint authenticationFailureHandler(ResourceUtil resourceUtil) {
+        return new AuthenticationFailureHandler(resourceUtil);
     }
 
 }

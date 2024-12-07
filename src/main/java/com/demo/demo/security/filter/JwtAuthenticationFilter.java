@@ -18,7 +18,7 @@ import com.demo.demo.security.authentication.JwtAuthenticationToken;
 import com.demo.demo.security.manager.RestAuthenticationManager;
 import com.demo.demo.security.service.JwtService;
 import com.demo.demo.security.service.RestUserDetailsService;
-import com.demo.demo.util.Resource;
+import com.demo.demo.util.ResourceUtil;
 
 /**
  * Centralized security logic. Rejects invalid or unauthenticated
@@ -29,27 +29,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RestAuthenticationManager restAuthenticationManager;
     private final JwtService jwtService;
     private final RestUserDetailsService restUserDetailsService;
-    private final Resource resource;
+    private final ResourceUtil resourceUtil;
 
-    public JwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager, JwtService jwtService, RestUserDetailsService restUserDetailsService, Resource resource) {
+    public JwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager, JwtService jwtService, RestUserDetailsService restUserDetailsService, ResourceUtil resourceUtil) {
         this.restAuthenticationManager = restAuthenticationManager;
         this.jwtService = jwtService;
         this.restUserDetailsService = restUserDetailsService;
-        this.resource = resource;
+        this.resourceUtil = resourceUtil;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        if (isLoginRequest(request)) {
+
+        if (resourceUtil.attemptToLogin(request)) {
             Authentication authentication = attemptAuthentication(request);
             if (isAuthenticated(authentication)){
                 setAuthenticationToContext(authentication);
             }
         }
 
-        if (resource.attemptToAccessPrivateResource(request)) {
+        if (resourceUtil.attemptToAccessPrivateResource(request)) {
             String extractedToken = request.getHeader("Authorization");
 
             if (extractedToken == null || !extractedToken.startsWith("Bearer ")) {
@@ -58,6 +59,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String token = jwtService.trimToken(extractedToken);
+
+            jwtService.checkTokenSemantics(token);
 
             if (jwtService.isTokenExpired(token)) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is Expired");
@@ -81,19 +84,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    /**
-     * Checks if the request is of type login.
-     * @param request
-     * @return
-     */
-    private boolean isLoginRequest(HttpServletRequest request) {
-        return request.getRequestURI().equals("/public/login") && request.getMethod().equals("POST");
-    }
-
-    private boolean isAccessPrivateResource(HttpServletRequest request) {
-        return request.getRequestURI().equals("/public/private/resource");
     }
 
     /**
