@@ -16,10 +16,15 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+jwt:
+  header: Authorization
+  expires_in: 600 # 10 minutes
+  secret: queenvictoria
+
 logging:
    level:
      org:
        springframework:
-         security: TRACE
+         security: DEBUG
          web:
            filter: TRACE

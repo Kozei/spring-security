@@ -11,12 +11,14 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.demo.demo.security.authentication.JwtAuthenticationToken;
 import com.demo.demo.security.manager.RestAuthenticationManager;
 import com.demo.demo.security.service.JwtService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.demo.demo.security.service.RestUserDetailsService;
+import com.demo.demo.util.Resource;
 
 /**
  * Centralized security logic. Rejects invalid or unauthenticated
@@ -26,10 +28,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final RestAuthenticationManager restAuthenticationManager;
     private final JwtService jwtService;
+    private final RestUserDetailsService restUserDetailsService;
+    private final Resource resource;
 
-    public JwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager, JwtService jwtService) {
+    public JwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager, JwtService jwtService, RestUserDetailsService restUserDetailsService, Resource resource) {
         this.restAuthenticationManager = restAuthenticationManager;
         this.jwtService = jwtService;
+        this.restUserDetailsService = restUserDetailsService;
+        this.resource = resource;
     }
 
     @Override
@@ -42,10 +48,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 setAuthenticationToContext(authentication);
             }
         }
-//
-//        if (!isLoginRequest(request)) {
-//            String token = jwtService.extractToken(request);
-//        }
+
+        if (resource.attemptToAccessPrivateResource(request)) {
+            String extractedToken = request.getHeader("Authorization");
+
+            if (extractedToken == null || !extractedToken.startsWith("Bearer ")) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token not Valid");
+                return;
+            }
+
+            String token = jwtService.trimToken(extractedToken);
+
+            if (jwtService.isTokenExpired(token)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token is Expired");
+                return;
+            }
+
+            String username = jwtService.extractUsername(token);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userPrincipal = restUserDetailsService.loadUserByUsername(username);
+
+                if (jwtService.isTokenValid(token, userPrincipal)) { // does token subject match loaded username
+                    JwtAuthenticationToken authentication = new JwtAuthenticationToken(userPrincipal,
+                            null,
+                            true,
+                            userPrincipal.getAuthorities()); //TODO: or get the authorities from the jwt payload
+
+                    setAuthenticationToContext(authentication);
+                }
+            }
+        }
 
         filterChain.doFilter(request, response);
     }
@@ -57,6 +90,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private boolean isLoginRequest(HttpServletRequest request) {
         return request.getRequestURI().equals("/public/login") && request.getMethod().equals("POST");
+    }
+
+    private boolean isAccessPrivateResource(HttpServletRequest request) {
+        return request.getRequestURI().equals("/public/private/resource");
     }
 
     /**
@@ -93,9 +130,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param authentication
      */
     private void setAuthenticationToContext(@NotNull Authentication authentication) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
 }

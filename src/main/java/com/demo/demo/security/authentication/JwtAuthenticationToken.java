@@ -12,8 +12,8 @@ public class JwtAuthenticationToken implements Authentication {
 
     private final Object principal;
     private Object password;
-    private final Collection<? extends GrantedAuthority> authorities;
     private Boolean isAuthenticated;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public JwtAuthenticationToken(Object principal, Object password, Boolean isAuthenticated, Collection<? extends GrantedAuthority> authorities) {
         this.principal = principal;

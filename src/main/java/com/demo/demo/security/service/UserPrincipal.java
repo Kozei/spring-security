@@ -34,4 +34,12 @@ public class UserPrincipal implements UserDetails {
     public String getUsername() {
         return appUser.getUsername();
     }
+
+
+    @Override
+    public String toString() {
+        return "UserPrincipal{" +
+                "appUser=" + appUser +
+                '}';
+    }
 }

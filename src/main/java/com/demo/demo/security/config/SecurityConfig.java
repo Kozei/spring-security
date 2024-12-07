@@ -25,6 +25,7 @@ import com.demo.demo.security.manager.RestAuthenticationManager;
 import com.demo.demo.security.provider.RestAuthenticationProvider;
 import com.demo.demo.security.service.JwtService;
 import com.demo.demo.security.service.RestUserDetailsService;
+import com.demo.demo.util.Resource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
@@ -36,15 +37,20 @@ public class SecurityConfig {
                                                        RestAuthenticationManager restAuthenticationManager,
                                                        ObjectMapper objectMapper,
                                                        @Qualifier("pathPatternParser") PathPatternParser parser,
-                                                       JwtService jwtService) throws Exception {
+                                                       JwtService jwtService, RestUserDetailsService restUserDetailsService, RestAuthenticationProvider restAuthenticationProvider, Resource resource) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .rememberMe(AbstractHttpConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
                 .exceptionHandling((exception) -> exception.authenticationEntryPoint(authenticationFailureHandler(objectMapper, parser)))
+                .securityContext((securityContext) -> securityContext.requireExplicitSave(false))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterAt(jwtAuthenticationFilter(restAuthenticationManager, jwtService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(jwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService,resource), UsernamePasswordAuthenticationFilter.class)
+                .authenticationManager(restAuthenticationManager)
+                .authenticationProvider(restAuthenticationProvider)
                 .addFilterBefore(capturePathFilter(), JwtAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_API).permitAll()
@@ -75,8 +81,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager, JwtService jwtService) {
-        return new JwtAuthenticationFilter(restAuthenticationManager, jwtService);
+    public Resource resource(@Qualifier("pathPatternParser")PathPatternParser parser) {
+        return new Resource(parser);
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager,
+                                                           JwtService jwtService,
+                                                           RestUserDetailsService restUserDetailsService,
+                                                           Resource resource) {
+        return new JwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService, resource);
     }
 
     @Bean

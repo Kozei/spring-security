@@ -32,5 +32,5 @@ username=elon&password=1234567
 ###
 
 #Protected Resource
-GET http://localhost:8080/private/user
+GET http://localhost:8080/private/resource
 Content-Type: application/json

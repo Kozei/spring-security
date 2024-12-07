@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,19 +41,12 @@ public class UserResource {
     private final AuthorityService authorityService;
     private final Mapper<RegisterDto, AppUser> signUpRequestMapper;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
-    private final RestUserDetailsService restUserDetailsService;
-    private final ServletContext servletContext;
 
-
-    public UserResource(UserService userService, AuthorityService authorityService, Mapper<RegisterDto, AppUser> signUpRequestMapper, JwtService jwtService, UserRepository userRepository, RestUserDetailsService restUserDetailsService, ServletContext servletContext) {
+    public UserResource(UserService userService, AuthorityService authorityService, Mapper<RegisterDto, AppUser> signUpRequestMapper, JwtService jwtService) {
         this.userService = userService;
         this.authorityService = authorityService;
         this.signUpRequestMapper = signUpRequestMapper;
         this.jwtService = jwtService;
-        this.userRepository = userRepository;
-        this.restUserDetailsService = restUserDetailsService;
-        this.servletContext = servletContext;
     }
 
     @PostMapping("/public/register")
@@ -79,51 +73,13 @@ public class UserResource {
         return ResponseEntity.ok(authResponseDto);
     }
 
-    @GetMapping("/private/users")
-    public ResponseEntity<List<AppUser>> getUsers() {
-        log.info("get users");
-        List<AppUser> appUsers = userService.getAllUsers();
-        return ResponseEntity.ok(appUsers);
+    @GetMapping("/private/resource")
+    public String getResource() {
+        return "Accessing protected resource";
     }
 
-    @GetMapping("/private/user")
-    public ResponseEntity<AppUser> getUser(@RequestParam String username) {
-        log.info("get user {}", username);
-        AppUser appUser = userService.getUserByUsername(username);
-        return ResponseEntity.ok(appUser);
+    @GetMapping("/private/resource2")
+    public String getResource2() {
+        return "Accessing protected resource2";
     }
-
-    @PostMapping("/private/user")
-    public ResponseEntity<AppUser> createUser(@RequestBody AppUser user) {
-        log.info("Create user: {}", user);
-        AppUser appUser = userService.saveUser(user);
-        return ResponseEntity.ok(appUser);
-    }
-
-    @DeleteMapping("/private/delete")
-    public ResponseEntity<AppUser> deleteUser(@RequestParam String username) {
-        log.info("delete user {}", username);
-        AppUser appUser = userService.getUserByUsername(username);
-        userService.deleteUser(username);
-        return ResponseEntity.ok(appUser);
-    }
-
-    @PostMapping("/private/user/authority")
-    public ResponseEntity<AppUser> addAuthorityToUser(@RequestParam String username, @RequestParam String authorityName) {
-        log.info("add authority to user {}", username);
-        AppUser appUser = userService.getUserByUsername(username);
-        Authority authority = authorityService.getAuthority(authorityName);
-        appUser.getAuthorities().add(authority);
-        return ResponseEntity.ok(appUser);
-    }
-
-    @DeleteMapping("/private/user/authority")
-    public ResponseEntity<AppUser> removeAuthorityFromUser(@RequestParam String username, @RequestParam String authorityName) {
-        log.info("remove authority from user {}", username);
-        AppUser appUser = userService.getUserByUsername(username);
-        Authority authority = authorityService.getAuthority(authorityName);
-        appUser.getAuthorities().remove(authority);
-        return ResponseEntity.ok(appUser);
-    }
-
 }

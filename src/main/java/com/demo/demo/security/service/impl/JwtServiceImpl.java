@@ -4,16 +4,19 @@ import static com.demo.demo.util.MessageConstants.SECRET_KEY;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.demo.demo.domain.AppUser;
 import com.demo.demo.security.service.JwtService;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -25,7 +28,9 @@ public class JwtServiceImpl implements JwtService {
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
-                .claim("authorities", userDetails.getAuthorities())
+                .claim("authorities", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .collect(Collectors.toList()))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60)) //1 minute
                 .signWith(getSignInKey())
@@ -33,11 +38,27 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String extractToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            return token.substring(7);
-        } else throw new RuntimeException();
+    public String trimToken(String token) {
+        return token.substring(7);
+    }
+
+    @Override
+    public String extractUsername(String token) {
+        return getClaimsFromToken(token).getSubject();
+    }
+
+    private Claims getClaimsFromToken(String token) {
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            claims = null;
+        }
+        return claims;
     }
 
     private Key getSignInKey() {
@@ -46,23 +67,17 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public void saveToken(String token, AppUser user) {
-
-    }
-
-    @Override
-    public boolean isTokenValid(String token, AppUser user) {
-        return false;
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        return getClaimsFromToken(token).getSubject().equals(userDetails.getUsername());
     }
 
     @Override
     public boolean isTokenExpired(String token) {
-        return false;
+        Claims claims = getClaimsFromToken(token);
+        if (claims != null) {
+            Date expiration = claims.getExpiration();  // Extract the expiration date
+            return expiration.before(new Date());  // Check if the expiration date is before the current date
+        }
+        return true;  // If claims are null or token is invalid, consider it expired
     }
-
-    @Override
-    public Map<String, Object> decodeToken(String token) {
-        return Map.of();
-    }
-
 }
