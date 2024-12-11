@@ -23,8 +23,8 @@ import com.demo.demo.security.authentication.AuthenticationFailureHandler;
 import com.demo.demo.security.filter.JwtAuthenticationFilter;
 import com.demo.demo.security.manager.RestAuthenticationManager;
 import com.demo.demo.security.provider.RestAuthenticationProvider;
-import com.demo.demo.security.service.JwtService;
 import com.demo.demo.security.service.RestUserDetailsService;
+import com.demo.demo.util.JwtUtil;
 import com.demo.demo.util.ResourceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,9 +35,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain restSecurityFilterChain(HttpSecurity http,
                                                        RestAuthenticationManager restAuthenticationManager,
-                                                       ObjectMapper objectMapper,
-                                                       @Qualifier("pathPatternParser") PathPatternParser parser,
-                                                       JwtService jwtService, RestUserDetailsService restUserDetailsService, RestAuthenticationProvider restAuthenticationProvider, ResourceUtil resourceUtil) throws Exception {
+                                                       RestUserDetailsService restUserDetailsService,
+                                                       RestAuthenticationProvider restAuthenticationProvider,
+                                                       ResourceUtil resourceUtil, JwtUtil jwtUtil) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .exceptionHandling((exception) -> exception.authenticationEntryPoint(authenticationFailureHandler(resourceUtil)))
                 .securityContext((securityContext) -> securityContext.requireExplicitSave(false))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterAt(jwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService, resourceUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(jwtAuthenticationFilter(restAuthenticationManager, jwtUtil, restUserDetailsService, resourceUtil), UsernamePasswordAuthenticationFilter.class)
                 .authenticationManager(restAuthenticationManager)
                 .authenticationProvider(restAuthenticationProvider)
                 .addFilterBefore(capturePathFilter(), JwtAuthenticationFilter.class)
@@ -86,10 +86,10 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(RestAuthenticationManager restAuthenticationManager,
-                                                           JwtService jwtService,
+                                                           JwtUtil jwtUtil,
                                                            RestUserDetailsService restUserDetailsService,
                                                            ResourceUtil resourceUtil) {
-        return new JwtAuthenticationFilter(restAuthenticationManager, jwtService, restUserDetailsService, resourceUtil);
+        return new JwtAuthenticationFilter(restAuthenticationManager, jwtUtil, restUserDetailsService, resourceUtil);
     }
 
     @Bean
@@ -114,5 +114,4 @@ public class SecurityConfig {
     public AuthenticationEntryPoint authenticationFailureHandler(ResourceUtil resourceUtil) {
         return new AuthenticationFailureHandler(resourceUtil);
     }
-
 }

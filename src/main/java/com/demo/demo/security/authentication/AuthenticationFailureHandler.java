@@ -14,8 +14,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import com.demo.demo.exception.MalformedJwtAuthenticationException;
 import com.demo.demo.util.ResourceUtil;
 
-import io.jsonwebtoken.MalformedJwtException;
-
 /**
  * Centralized exception handling within the security chain decoupled from the business layer.
  * This entry point is designed to handle authentication errors. Every call that fails to authenticate

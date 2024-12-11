@@ -1,19 +1,13 @@
 package com.demo.demo.api;
 
-import java.util.List;
-
-import jakarta.servlet.ServletContext;
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,16 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.demo.domain.AppUser;
-import com.demo.demo.domain.Authority;
 import com.demo.demo.dto.AuthResponseDto;
 import com.demo.demo.dto.RegisterDto;
 import com.demo.demo.mapper.Mapper;
-import com.demo.demo.repository.UserRepository;
-import com.demo.demo.security.service.JwtService;
-import com.demo.demo.security.service.RestUserDetailsService;
 import com.demo.demo.security.service.UserPrincipal;
-import com.demo.demo.service.AuthorityService;
 import com.demo.demo.service.UserService;
+import com.demo.demo.util.JwtUtil;
 
 @RestController
 public class UserResource {
@@ -38,15 +28,13 @@ public class UserResource {
     private static final Logger log = LoggerFactory.getLogger(UserResource.class);
 
     private final UserService userService;
-    private final AuthorityService authorityService;
     private final Mapper<RegisterDto, AppUser> signUpRequestMapper;
-    private final JwtService jwtService;
+    private final JwtUtil jwtUtil;
 
-    public UserResource(UserService userService, AuthorityService authorityService, Mapper<RegisterDto, AppUser> signUpRequestMapper, JwtService jwtService) {
+    public UserResource(UserService userService, Mapper<RegisterDto, AppUser> signUpRequestMapper, JwtUtil jwtUtil) {
         this.userService = userService;
-        this.authorityService = authorityService;
         this.signUpRequestMapper = signUpRequestMapper;
-        this.jwtService = jwtService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/public/register")
@@ -55,7 +43,7 @@ public class UserResource {
         userService.saveUser(appUser);
 
         var userPrincipal = new UserPrincipal(appUser);
-        var token = jwtService.generateToken(userPrincipal);
+        var token = jwtUtil.generateToken(userPrincipal);
         var authResponseDto = new AuthResponseDto(token);
 
         return ResponseEntity.ok(authResponseDto);
@@ -67,7 +55,7 @@ public class UserResource {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var userPrincipal = (UserDetails) authentication.getPrincipal();
-        var token = jwtService.generateToken(userPrincipal);
+        var token = jwtUtil.generateToken(userPrincipal);
         var authResponseDto = new AuthResponseDto(token);
 
         return ResponseEntity.ok(authResponseDto);

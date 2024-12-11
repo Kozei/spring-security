@@ -1,39 +1,33 @@
-package com.demo.demo.security.service.impl;
+package com.demo.demo.util;
 
 import static com.demo.demo.util.MessageConstants.SECRET_KEY;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.demo.demo.exception.MalformedJwtAuthenticationException;
-import com.demo.demo.security.service.JwtService;
-import com.demo.demo.util.ResourceUtil;
+import com.demo.demo.exception.InvalidTokenException;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 @Service
-public class JwtServiceImpl implements JwtService {
+public class JwtUtil {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
-    @Override
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
@@ -46,12 +40,10 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
-    @Override
     public String trimToken(String token) {
         return token.substring(7);
     }
 
-    @Override
     public String extractUsername(String token) {
         return getClaimsFromToken(token).getSubject();
     }
@@ -70,13 +62,22 @@ public class JwtServiceImpl implements JwtService {
         return claims;
     }
 
-    @Override
-    public void checkTokenSemantics(String token) {
-        //TODO: Any exception thrown here (when token semantics are altered) like Signature or Malformed Exception is treated as CredentialsNotFoundException. Fix it.
-        Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token);
+    public boolean isTokenValid(String token) {
+        try {
+            Jwts.parser().setSigningKey(SECRET_KEY).build().parseClaimsJws(token);
+            return true;
+        } catch (SignatureException e) {
+            log.info("Invalid JWT signature.");
+        } catch (MalformedJwtException e) {
+            log.info("Invalid JWT token.");
+        } catch (ExpiredJwtException e) {
+            log.info("Expired JWT token.");
+        } catch (UnsupportedJwtException e) {
+            log.info("Unsupported JWT token.");
+        } catch (IllegalArgumentException e) {
+            log.info("JWT token compact of handler are invalid.");
+        }
+        return false;
     }
 
     private Key getSignInKey() {
@@ -84,18 +85,15 @@ public class JwtServiceImpl implements JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    @Override
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isTokenSubjectValid(String token, UserDetails userDetails) {
         return getClaimsFromToken(token).getSubject().equals(userDetails.getUsername());
     }
 
-    @Override
-    public boolean isTokenExpired(String token) {
-        Claims claims = getClaimsFromToken(token);
-        if (claims != null) {
-            Date expiration = claims.getExpiration();  // Extract the expiration date
-            return expiration.before(new Date());  // Check if the expiration date is before the current date
+    public boolean isExtractedTokenValid(String token, String prefix){
+        if (token == null || !token.startsWith(prefix)) {
+            throw new InvalidTokenException("Invalid Token");
         }
-        return true;  // If claims are null or token is invalid, consider it expired
+        String tokenWithoutPrefix = trimToken(token);
+        return isTokenValid(tokenWithoutPrefix);
     }
 }
